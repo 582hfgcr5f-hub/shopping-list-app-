@@ -15,7 +15,7 @@ setTimeout(()=>{
  let mealView='night',selectedMenuDate='';
  const baseRenderSuppers=renderSuppers;
  function mealTabsHtml(){return `<div class="mealTabs"><button class="${mealView==='night'?'on':''}" onclick="window.__setMealView('night')">Night</button><button class="${mealView==='day'?'on':''}" onclick="window.__setMealView('day')">Day</button></div>`}
- function menuDateHtml(){if(!selectedMenuDate)return'';const d=new Date(selectedMenuDate+'T12:00:00');return `<div class="menuDate">${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>`}
+ function menuDateHtml(){if(!selectedMenuDate)return'';let d=new Date(selectedMenuDate+'T12:00:00');if(mealView==='night'&&supMode==='yt')d.setDate(d.getDate()-1);return `<div class="menuDate">${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>`}
  window.__setMealView=function(meal){mealView=meal;renderSuppers()};
  renderSuppers=function(){document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));if(supMode==='mine'){baseRenderSuppers();return}if(supMode==='shab'||supMode==='yt'){const isShab=supMode==='shab',type=isShab?'Shabbos':'Yom Tov',label=mealView==='night'?(isShab?'Friday Night':'Yom Tov Night'):(isShab?'Shabbos Day':'Yom Tov Day');$('supContent').innerHTML=`<div style="margin:16px 3px 2px;font-weight:850;color:#748077">${type} Menu</div>${menuDateHtml()}${mealTabsHtml()}${menuCard(supMode,mealView,label)}`;return}baseRenderSuppers()};
  document.querySelectorAll('[data-sup]').forEach(b=>b.onclick=()=>{selectedMenuDate='';supMode=b.dataset.sup;if(supMode==='shab'||supMode==='yt')mealView='night';renderSuppers()});
