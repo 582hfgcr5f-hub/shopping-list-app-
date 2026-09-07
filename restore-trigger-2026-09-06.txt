@@ -1,1 +1,2 @@
-Force Vercel to deploy the locked polished build from main.
+Force Vercel to deploy the latest full-year Jewish calendar build from main.
+Redeploy trigger: 2026-09-07T00:05:00-04:00
