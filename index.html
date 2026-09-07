@@ -117,6 +117,7 @@ input,select,textarea{width:100%;padding:12px;border:1px solid #d8dfd9;border-ra
 <script src="gourmet-glatt-batch1.js"></script>
 <script src="gourmet-glatt-batch2.js"></script>
 <script src="gourmet-glatt-batch3.js"></script>
+<script src="gourmet-glatt-batch4.js"></script>
 <script>
 const $=id=>document.getElementById(id),N=s=>(s||'').trim().toLowerCase(),save=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
 const CAT=[['Produce','🥬'],['Dairy','🥛'],['Meat','🥩'],['Fish','🐟'],['Frozen','🧊'],['Pantry','🥫'],['Bakery','🥖'],['Snacks','🍿'],['Cereal','🥣'],['Drinks','🥤'],['Household','🧻'],['Shabbos','🕯️'],['Yom Tov','🍷']];
@@ -124,6 +125,7 @@ let items=load('itemsV4',[['Bananas','Produce','🍌'],['Apples','Produce','🍎
 (window.GOURMET_GLATT_BATCH1||[]).forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});
 (window.GOURMET_GLATT_BATCH2||[]).forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});
 (window.GOURMET_GLATT_BATCH3||[]).forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});
+(window.GOURMET_GLATT_BATCH4||[]).forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});
 let custom=load('customV2',[]);custom.forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});let shop=load('shopV6',{}),suppers=load('suppersV3',[]),cal=new Date(),selectedCat=null,q=1,photoData='',supMode='mine',editCtx=null,pickDate='';
 const H=load('menusV3',{shab:{night:{Appetizers:['Salmon'],Starters:['Soup','Kugel'],Main:['Schnitzel & Mashed Potatoes','Oyster Steak','Rib Steak'],Sides:['Cucumber Salad','Pastrami Rice'],Desserts:['Dessert']},day:{Appetizers:['Eggs','Liver'],Starters:['Kugel'],Main:['Cholent','Meat'],Sides:['String Beans','Salad'],Desserts:['Dessert']}},yt:{night:{Appetizers:['Salmon'],Starters:['Soup','Kugel'],Main:['Schnitzel & Mashed Potatoes','Meat'],Sides:['Salad','Rice'],Desserts:['Dessert']},day:{Appetizers:['Eggs'],Starters:['Kugel'],Main:['Cholent','Meat'],Sides:['Salad'],Desserts:['Dessert']}}});
 const RECIPES={
