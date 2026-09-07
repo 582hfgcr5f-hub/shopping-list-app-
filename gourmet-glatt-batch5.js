@@ -29,3 +29,40 @@ setTimeout(()=>{
  dateTap=function(ds,ev){if(ev==='Shabbos Night'||ev==='Shabbos Day'){selectedMenuDate=ds;supMode='shab';mealView=ev==='Shabbos Night'?'night':'day';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='suppers'));document.querySelectorAll('[data-nav]').forEach(x=>x.classList.toggle('on',x.dataset.nav==='suppers'));$('title').textContent='Suppers';renderSuppers();return}if(ev){selectedMenuDate=ds;supMode='yt';mealView='day';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='suppers'));document.querySelectorAll('[data-nav]').forEach(x=>x.classList.toggle('on',x.dataset.nav==='suppers'));$('title').textContent='Suppers';renderSuppers();return}openSupperPicker(ds)};
  renderMonth();renderCats();renderShop('buy');renderSuppers();
 },0);
+
+setTimeout(()=>{
+ if(typeof RECIPES==='undefined'||typeof openRecipe!=='function')return;
+ const overrideKey='recipeIngredientOverridesV1';
+ const getOverrides=()=>{try{return JSON.parse(localStorage.getItem(overrideKey)||'{}')}catch{return{}}};
+ const saveOverrides=o=>localStorage.setItem(overrideKey,JSON.stringify(o));
+ const baseOpenRecipe=openRecipe;
+ function effectiveRecipe(name){
+   const base=RECIPES[name];if(!base)return null;
+   const o=getOverrides()[name];
+   return {...base,ingredients:Array.isArray(o)&&o.length?o:base.ingredients};
+ }
+ window.__editRecipeIngredients=function(name){
+   const base=RECIPES[name];if(!base)return;
+   const current=effectiveRecipe(name).ingredients.map(x=>x[0]).join(', ');
+   const value=prompt('Edit ingredients (separate each ingredient with a comma):',current);
+   if(value===null)return;
+   const names=value.split(',').map(x=>x.trim()).filter(Boolean);
+   if(!names.length){alert('Please keep at least one ingredient.');return}
+   const prior=effectiveRecipe(name).ingredients;
+   const edited=names.map(n=>{const found=prior.find(x=>N(x[0])===N(n))||base.ingredients.find(x=>N(x[0])===N(n));return found?[n,found[1],found[2]]:[n,'Pantry','🛒']});
+   const all=getOverrides();all[name]=edited;saveOverrides(all);openRecipe(name);
+ };
+ window.__resetRecipeIngredients=function(name){const all=getOverrides();delete all[name];saveOverrides(all);openRecipe(name)};
+ openRecipe=function(name){
+   const recipe=effectiveRecipe(name);
+   if(!recipe){baseOpenRecipe(name);return}
+   const customized=!!getOverrides()[name];
+   $('detailBody').innerHTML=`<div class="recipeHero"><h3>${esc(name)}</h3><div class="recipeMeta">Supper • Ingredients & directions${customized?' • Customized':''}</div></div><div class="recipeSection"><div class="hdr"><h4 style="margin:0">Ingredients</h4><button class="btn" onclick="__editRecipeIngredients('${js(name)}')">Edit Ingredients</button></div><div class="ingredientList" style="margin-top:11px">${recipe.ingredients.map(x=>`<div class="ingredientItem"><span class="ingredientDot"></span><span>${esc(x[0])}</span></div>`).join('')}</div>${customized?`<button class="btn" style="margin-top:12px" onclick="__resetRecipeIngredients('${js(name)}')">Reset Ingredients</button>`:''}</div><div class="recipeSection"><h4>Directions</h4><div class="recipeSteps">${recipe.steps.map(x=>`<div class="recipeStep"><span>${esc(x)}</span></div>`).join('')}</div></div><div class="recipeActions"><button id="addRecipeBtn" class="btn green" onclick="addRecipeIngredients('${js(name)}')">Add Ingredients to Shopping List</button><button class="btn" onclick="chooseDayForRecipe('${js(name)}')">Choose a Day</button></div>`;
+   $('detail').classList.add('on');
+ };
+ addRecipeIngredients=function(name){
+   const recipe=effectiveRecipe(name);if(!recipe)return;
+   recipe.ingredients.forEach(([n,cat,emoji])=>{let key=N(n),existing=shop[key];shop[key]={name:n,cat,photo:emoji,customPhoto:'',qty:(existing?.qty||0)+1,selected:false}});
+   persist();updateCount();renderShop('buy');const btn=$('addRecipeBtn');if(btn){const old=btn.textContent;btn.textContent='✓ Added to Shopping List';btn.disabled=true;setTimeout(()=>{btn.textContent=old;btn.disabled=false},1200)}
+ };
+},0);
