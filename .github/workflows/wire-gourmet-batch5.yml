@@ -1,0 +1,48 @@
+name: Wire Gourmet Glatt Batch 5
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/wire-gourmet-batch5.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index safely
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          tag='<script src="gourmet-glatt-batch5.js"></script>\n'
+          if tag not in s:
+              anchor='<script src="gourmet-glatt-batch4.js"></script>\n'
+              if anchor in s:
+                  s=s.replace(anchor, anchor+tag, 1)
+              else:
+                  raise SystemExit('batch4 script tag not found')
+          if 'GOURMET_GLATT_BATCH5||[]' not in s:
+              marker="(window.GOURMET_GLATT_BATCH4||[]).forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});"
+              merge="\n(window.GOURMET_GLATT_BATCH5||[]).forEach(x=>{if(!items.find(i=>N(i[0])===N(x[0])))items.push(x)});"
+              if marker not in s:
+                  raise SystemExit('batch4 merge marker not found')
+              s=s.replace(marker, marker+merge, 1)
+          p.write_text(s)
+          PY
+      - name: Commit only the index change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Connect Gourmet Glatt Drinks and Household to Items"
+            git push
+          fi
