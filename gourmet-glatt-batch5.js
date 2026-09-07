@@ -5,105 +5,73 @@ window.GOURMET_GLATT_BATCH5 = [
 
 setTimeout(() => {
   if (typeof H === 'undefined') return;
-
   const sectionOrder = ['Appetizers','Starters','Main','Sides','Desserts'];
   ['shab','yt'].forEach(k => ['night','day'].forEach(meal => {
     const oldMenu = H[k] && H[k][meal] ? H[k][meal] : {};
     const nextMenu = {};
     sectionOrder.forEach(section => nextMenu[section] = Array.isArray(oldMenu[section]) ? oldMenu[section] : []);
-    Object.keys(oldMenu).forEach(section => {
-      if (!sectionOrder.includes(section) && section !== 'Drinks') nextMenu[section] = oldMenu[section];
-    });
+    Object.keys(oldMenu).forEach(section => { if (!sectionOrder.includes(section) && section !== 'Drinks') nextMenu[section] = oldMenu[section]; });
     H[k][meal] = nextMenu;
   }));
   if (typeof save === 'function') save('menusV3', H);
 
   if (typeof addMenuItem === 'function') addMenuItem = function(k, meal) {
-    let section = prompt('Section: Appetizers, Starters, Main, Sides, or Desserts');
-    if (!section) return;
+    let section = prompt('Section: Appetizers, Starters, Main, Sides, or Desserts'); if (!section) return;
     let key = Object.keys(H[k][meal]).find(x => N(x) === N(section));
     if (!key) { alert('Please choose Appetizers, Starters, Main, Sides, or Desserts.'); return; }
-    let item = prompt('Item to add');
-    if (!item) return;
-    H[k][meal][key].push(item.trim());
-    persist();
-    renderSuppers();
+    let item = prompt('Item to add'); if (!item) return;
+    H[k][meal][key].push(item.trim()); persist(); renderSuppers();
   };
 
   const hebParts = d => {
-    const parts = new Intl.DateTimeFormat('en-u-ca-hebrew', {day:'numeric', month:'long', year:'numeric'}).formatToParts(d);
-    const get = t => parts.find(p => p.type === t)?.value || '';
-    return {day:Number(get('day')), month:get('month'), year:get('year')};
+    const parts = new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long'}).formatToParts(d);
+    const get=t=>parts.find(p=>p.type===t)?.value||'';
+    return {day:Number(get('day')),month:get('month')};
   };
-  const hebLabel = d => new Intl.DateTimeFormat('en-u-ca-hebrew', {day:'numeric', month:'short'}).format(d);
-
-  const majorYomTovFor = d => {
-    const h = hebParts(d), m = h.month, n = h.day;
-    if (m === 'Tishri' || m === 'Tishrei') {
-      if (n === 1 || n === 2) return 'Rosh Hashana';
-      if (n === 10) return 'Yom Kippur';
-      if (n === 15 || n === 16) return 'Sukkos';
-      if (n === 22) return 'Shemini Atzeres';
-      if (n === 23) return 'Simchas Torah';
+  const yomTovFor = d => {
+    const h=hebParts(d),m=h.month,n=h.day;
+    if(m==='Tishri'||m==='Tishrei'){
+      if(n===1||n===2)return 'Rosh Hashana';
+      if(n===10)return 'Yom Kippur';
+      if(n===15||n===16)return 'Sukkos';
+      if(n===22)return 'Shemini Atzeres';
+      if(n===23)return 'Simchas Torah';
     }
-    if (m === 'Nisan') {
-      if (n === 15 || n === 16 || n === 21 || n === 22) return 'Pesach';
-    }
-    if (m === 'Sivan' && (n === 6 || n === 7)) return 'Shavuos';
+    if(m==='Nisan'&&(n===15||n===16||n===21||n===22))return 'Pesach';
+    if(m==='Sivan'&&(n===6||n===7))return 'Shavuos';
     return '';
   };
-
-  const jewishEventFor = d => {
-    const yt = majorYomTovFor(d);
-    if (yt) return {name:yt, type:'yt'};
-    const tomorrow = new Date(d);
-    tomorrow.setDate(d.getDate() + 1);
-    const tomorrowYt = majorYomTovFor(tomorrow);
-    if (tomorrowYt) return {name:`Erev ${tomorrowYt}`, type:'erev'};
-    if (d.getDay() === 6) return {name:'Shabbos', type:'shabbos'};
-    if (d.getDay() === 5) return {name:'Erev Shabbos', type:'erev'};
-    return {name:'', type:''};
+  const eventFor = d => {
+    const yt=yomTovFor(d);
+    if(yt)return {name:yt,type:'yt'};
+    if(d.getDay()===5)return {name:'Shabbos Night',type:'shabbos'};
+    if(d.getDay()===6)return {name:'Shabbos Day',type:'shabbos'};
+    return {name:'',type:''};
   };
 
-  renderMonth = function() {
-    let y = cal.getFullYear(), m = cal.getMonth();
-    $('monthLabel').textContent = cal.toLocaleString(undefined, {month:'long', year:'numeric'});
-    let first = new Date(y,m,1), start = first.getDay(), days = new Date(y,m+1,0).getDate(), prev = new Date(y,m,0).getDate(), cells = '';
-    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => cells += `<div class="dow">${d}</div>`);
-
-    for (let i=0;i<42;i++) {
-      let n, dt, mut='';
-      if (i < start) { n = prev-start+i+1; dt = new Date(y,m-1,n); mut=' muted'; }
-      else if (i >= start+days) { n = i-start-days+1; dt = new Date(y,m+1,n); mut=' muted'; }
-      else { n = i-start+1; dt = new Date(y,m,n); }
-
-      const ds = isoLocal(dt), event = jewishEventFor(dt), s = suppers.find(x => x.date === ds);
-      const cls = event.type === 'yt' ? ' holiday' : event.type === 'shabbos' ? ' shabbos' : '';
-      const eventText = event.name ? `<div class="evt">${event.name}</div>` : '';
-      const supperText = s ? `<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>` : '';
-      cells += `<button class="date${mut}${cls}" onclick="dateTap('${ds}','${event.name.replaceAll("'","&#39;")}')"><span class="n">${n}</span><div class="evt" style="color:#748077;font-weight:700">${hebLabel(dt)}</div>${eventText}${supperText}</button>`;
+  renderMonth = function(){
+    let y=cal.getFullYear(),m=cal.getMonth();
+    $('monthLabel').textContent=cal.toLocaleString(undefined,{month:'long',year:'numeric'});
+    let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>cells+=`<div class="dow">${d}</div>`);
+    for(let i=0;i<42;i++){
+      let n,dt,mut='';
+      if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}
+      else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}
+      else{n=i-start+1;dt=new Date(y,m,n)}
+      const ds=isoLocal(dt),event=eventFor(dt),s=suppers.find(x=>x.date===ds);
+      const cls=event.type==='yt'?' holiday':event.type==='shabbos'?' shabbos':'';
+      cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${event.name.replaceAll("'","&#39;")}')"><span class="n">${n}</span>${event.name?`<div class="evt">${event.name}</div>`:''}${s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`;
     }
-    $('cal').innerHTML = cells;
+    $('cal').innerHTML=cells;
   };
-
-  dateTap = function(ds, ev) {
-    if (ev === 'Shabbos') {
-      supMode = 'shab';
-      nav('suppers');
-      document.querySelectorAll('[data-sup]').forEach(b => b.classList.toggle('on', b.dataset.sup === supMode));
-      renderSuppers();
-      return;
+  dateTap = function(ds,ev){
+    if(ev==='Shabbos Night'||ev==='Shabbos Day'){
+      supMode='shab';nav('suppers');document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));renderSuppers();return;
     }
-    if (ev && !ev.startsWith('Erev ')) {
-      supMode = 'yt';
-      nav('suppers');
-      document.querySelectorAll('[data-sup]').forEach(b => b.classList.toggle('on', b.dataset.sup === supMode));
-      renderSuppers();
-      return;
-    }
+    if(ev){supMode='yt';nav('suppers');document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));renderSuppers();return;}
     openSupperPicker(ds);
   };
-
   renderMonth();
-  if (typeof renderSuppers === 'function') renderSuppers();
-}, 0);
+  if(typeof renderSuppers==='function')renderSuppers();
+},0);
