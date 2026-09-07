@@ -1,0 +1,62 @@
+name: Add Dynamic Jewish Calendar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/jewish-calendar.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch calendar only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="const HOL={'2026-09-04':'Shabbos Night','2026-09-05':'Shabbos Day','2026-09-11':'Erev Rosh Hashana','2026-09-12':'Rosh Hashana','2026-09-13':'Rosh Hashana','2026-09-18':'Shabbos Night','2026-09-19':'Shabbos Day','2026-09-20':'Erev Yom Kippur','2026-09-21':'Yom Kippur','2026-09-25':'Shabbos Night','2026-09-26':'Shabbos Day'};"
+          new="""let HOL={};
+let jewishCalendarLoaded={};
+async function loadJewishYear(year){
+ if(jewishCalendarLoaded[year])return;
+ jewishCalendarLoaded[year]=true;
+ try{
+  const url=`https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&yt=G&maj=on&min=off&mod=off&nx=off&mf=on&ss=on&s=off&c=off&geo=none&i=off`;
+  const r=await fetch(url);if(!r.ok)throw new Error('Hebcal');
+  const data=await r.json();
+  (data.items||[]).forEach(e=>{
+   if(!e.date||!e.title)return;
+   const ds=e.date.slice(0,10),cat=(e.category||'').toLowerCase();
+   if(cat==='holiday'||cat==='fast'||cat==='roshchodesh'||cat==='mevarchim'||cat==='specialshabbat'){
+    HOL[ds]=HOL[ds]?HOL[ds]+' · '+e.title:e.title;
+   }
+  });
+ }catch(e){console.warn('Jewish calendar unavailable',e)}
+ renderMonth();
+}
+function shabbosLabel(dt){const day=dt.getDay();return day===5?'Shabbos Night':day===6?'Shabbos Day':'';}"""
+          if old in s:
+              s=s.replace(old,new,1)
+          elif 'async function loadJewishYear(year)' not in s:
+              raise SystemExit('calendar marker not found')
+          old2="let ds=isoLocal(dt),ev=HOL[ds]||'',cls=ev.includes('Shabbos')?' shabbos':ev?' holiday':'',s=suppers.find(x=>x.date===ds);"
+          new2="let ds=isoLocal(dt),jew=HOL[ds]||'',shab=shabbosLabel(dt),ev=[shab,jew].filter(Boolean).join(' · '),cls=shab?' shabbos':jew?' holiday':'',s=suppers.find(x=>x.date===ds);"
+          if old2 in s:s=s.replace(old2,new2,1)
+          elif 'shabbosLabel(dt)' not in s:raise SystemExit('month event marker not found')
+          old3="function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();"
+          new3="function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();loadJewishYear(y);"
+          if old3 in s:s=s.replace(old3,new3,1)
+          p.write_text(s)
+          PY
+      - name: Commit calendar update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then echo "No changes needed"; else git commit -m "Make full calendar Jewish with Shabbos and Yom Tov" && git push; fi
