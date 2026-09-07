@@ -6,7 +6,7 @@ window.GOURMET_GLATT_BATCH5 = [
 // Keep saved Shabbos/Yom Tov menus in sync with the current section layout.
 setTimeout(() => {
   if (typeof H === 'undefined') return;
-  const sectionOrder = ['Appetizers','Starters','Main','Sides','Drinks','Desserts'];
+  const sectionOrder = ['Appetizers','Starters','Main','Sides','Desserts'];
   ['shab','yt'].forEach(k => ['night','day'].forEach(meal => {
     const oldMenu = H[k] && H[k][meal] ? H[k][meal] : {};
     const nextMenu = {};
@@ -14,7 +14,7 @@ setTimeout(() => {
       nextMenu[section] = Array.isArray(oldMenu[section]) ? oldMenu[section] : [];
     });
     Object.keys(oldMenu).forEach(section => {
-      if (!sectionOrder.includes(section)) nextMenu[section] = oldMenu[section];
+      if (!sectionOrder.includes(section) && section !== 'Drinks') nextMenu[section] = oldMenu[section];
     });
     H[k][meal] = nextMenu;
   }));
@@ -22,11 +22,11 @@ setTimeout(() => {
 
   if (typeof addMenuItem === 'function') {
     addMenuItem = function(k, meal) {
-      let section = prompt('Section: Appetizers, Starters, Main, Sides, Drinks, or Desserts');
+      let section = prompt('Section: Appetizers, Starters, Main, Sides, or Desserts');
       if (!section) return;
       let key = Object.keys(H[k][meal]).find(x => N(x) === N(section));
       if (!key) {
-        alert('Please choose Appetizers, Starters, Main, Sides, Drinks, or Desserts.');
+        alert('Please choose Appetizers, Starters, Main, Sides, or Desserts.');
         return;
       }
       let item = prompt('Item to add');
