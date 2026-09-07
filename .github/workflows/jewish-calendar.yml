@@ -15,65 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Patch calendar directly into main app
+        shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          p=Path('index.html')
-          s=p.read_text()
-
-          # Replace the September-only calendar data with a full-year Jewish calendar
-          # calculated locally in the browser. No visual layout changes.
-          s=re.sub(
-            r"const HOL=\{.*?\};\nfunction renderMonth\(\)\{.*?\}\nfunction dateTap\(ds,ev\)\{.*?\}\nfunction renderCats",
-            r'''function hebParts(dt){
- const parts=new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long',year:'numeric'}).formatToParts(dt);
- const get=t=>parts.find(p=>p.type===t)?.value||'';
- return {day:Number(get('day')),month:get('month'),year:get('year')};
-}
-function hebShort(dt){return new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'short'}).format(dt)}
-function yomTovName(dt){
- const h=hebParts(dt),m=h.month,n=h.day;
- if(m==='Tishri'||m==='Tishrei'){
-  if(n===1||n===2)return 'Rosh Hashana';
-  if(n===10)return 'Yom Kippur';
-  if(n===15||n===16)return 'Sukkos';
-  if(n===22)return 'Shemini Atzeres';
-  if(n===23)return 'Simchas Torah';
- }
- if(m==='Nisan'&&(n===15||n===16||n===21||n===22))return 'Pesach';
- if(m==='Sivan'&&(n===6||n===7))return 'Shavuos';
- return '';
-}
-function jewishEvent(dt){
- const yt=yomTovName(dt);
- if(yt)return yt;
- if(dt.getDay()===6)return 'Shabbos Day';
- if(dt.getDay()===5)return 'Shabbos Night';
- return '';
-}
-function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();$('monthLabel').textContent=cal.toLocaleString(undefined,{month:'long',year:'numeric'});let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>cells+=`<div class="dow">${d}</div>`);for(let i=0;i<42;i++){let n,dt,mut='';if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}else{n=i-start+1;dt=new Date(y,m,n)}let ds=isoLocal(dt),ev=jewishEvent(dt),cls=ev.includes('Shabbos')?' shabbos':ev?' holiday':'',s=suppers.find(x=>x.date===ds);cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${ev.replaceAll("'","&#39;")}')"><span class="n">${n}</span><div style="font-size:9px;color:#748077;margin-top:2px">${hebShort(dt)}</div>${ev?`<div class="evt">${ev}</div>`:s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`}$('cal').innerHTML=cells}
-function dateTap(ds,ev){if(ev){supMode=ev.toLowerCase().includes('shabbos')?'shab':'yt';nav('suppers');document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));renderSuppers()}else openSupperPicker(ds)}
-function renderCats''',
-            s,
-            count=1,
-            flags=re.S
-          )
-
-          if 'function hebParts(dt)' not in s:
-              raise SystemExit('Could not patch main calendar')
-          p.write_text(s)
-
-          # Disable the older calendar override in batch5 so the main calendar stays in control.
-          b=Path('gourmet-glatt-batch5.js')
-          t=b.read_text()
-          marker='  // Full-year Jewish calendar.'
-          if marker in t and '  // Calendar now lives directly in index.html.' not in t:
-              t=t.replace(marker,"  // Calendar now lives directly in index.html.\n  if (typeof renderSuppers === 'function') renderSuppers();\n  return;\n\n"+marker,1)
-              b.write_text(t)
-          PY
+          echo 'CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQgcmUKCnAgPSBQYXRoKCJpbmRleC5odG1sIikKcyA9IHAucmVhZF90ZXh0KCkKCnN0YXJ0ID0gcy5pbmRleCgiY29uc3QgSE9MPSIpCmVuZCA9IHMuaW5kZXgoImZ1bmN0aW9uIHJlbmRlckNhdHMiLCBzdGFydCkKCnJlcGxhY2VtZW50ID0gIiIiZnVuY3Rpb24gaGViUGFydHMoZHQpewogY29uc3QgcGFydHM9bmV3IEludGwuRGF0ZVRpbWVGb3JtYXQoJ2VuLXUtY2EtaGVicmV3Jyx7ZGF5OidudW1lcmljJyxtb250aDonbG9uZycseWVhcjonbnVtZXJpYyd9KS5mb3JtYXRUb1BhcnRzKGR0KTsKIGNvbnN0IGdldD10PT5wYXJ0cy5maW5kKHA9PnAudHlwZT09PXQpPy52YWx1ZXx8Jyc7CiByZXR1cm4ge2RheTpOdW1iZXIoZ2V0KCdkYXknKSksbW9udGg6Z2V0KCdtb250aCcpLHllYXI6Z2V0KCd5ZWFyJyl9Owp9CmZ1bmN0aW9uIGhlYlNob3J0KGR0KXtyZXR1cm4gbmV3IEludGwuRGF0ZVRpbWVGb3JtYXQoJ2VuLXUtY2EtaGVicmV3Jyx7ZGF5OidudW1lcmljJyxtb250aDonc2hvcnQnfSkuZm9ybWF0KGR0KX0KZnVuY3Rpb24geW9tVG92TmFtZShkdCl7CiBjb25zdCBoPWhlYlBhcnRzKGR0KSxtPWgubW9udGgsbj1oLmRheTsKIGlmKG09PT0nVGlzaHJpJ3x8bT09PSdUaXNocmVpJyl7CiAgaWYobj09PTF8fG49PT0yKXJldHVybiAnUm9zaCBIYXNoYW5hJzsKICBpZihuPT09MTApcmV0dXJuICdZb20gS2lwcHVyJzsKICBpZihuPT09MTV8fG49PT0xNilyZXR1cm4gJ1N1a2tvcyc7CiAgaWYobj09PTIyKXJldHVybiAnU2hlbWluaSBBdHplcmVzJzsKICBpZihuPT09MjMpcmV0dXJuICdTaW1jaGFzIFRvcmFoJzsKIH0KIGlmKG09PT0nTmlzYW4nJiYobj09PTE1fHxuPT09MTZ8fG49PT0yMXx8bj09PTIyKSlyZXR1cm4gJ1Blc2FjaCc7CiBpZihtPT09J1NpdmFuJyYmKG49PT02fHxuPT09NykpcmV0dXJuICdTaGF2dW9zJzsKIHJldHVybiAnJzsKfQpmdW5jdGlvbiBqZXdpc2hFdmVudChkdCl7CiBjb25zdCB5dD15b21Ub3ZOYW1lKGR0KTsKIGlmKHl0KXJldHVybiB5dDsKIGlmKGR0LmdldERheSgpPT09NilyZXR1cm4gJ1NoYWJib3MgRGF5JzsKIGlmKGR0LmdldERheSgpPT09NSlyZXR1cm4gJ1NoYWJib3MgTmlnaHQnOwogcmV0dXJuICcnOwp9CmZ1bmN0aW9uIHJlbmRlck1vbnRoKCl7bGV0IHk9Y2FsLmdldEZ1bGxZZWFyKCksbT1jYWwuZ2V0TW9udGgoKTskKCdtb250aExhYmVsJykudGV4dENvbnRlbnQ9Y2FsLnRvTG9jYWxlU3RyaW5nKHVuZGVmaW5lZCx7bW9udGg6J2xvbmcnLHllYXI6J251bWVyaWMnfSk7bGV0IGZpcnN0PW5ldyBEYXRlKHksbSwxKSxzdGFydD1maXJzdC5nZXREYXkoKSxkYXlzPW5ldyBEYXRlKHksbSsxLDApLmdldERhdGUoKSxwcmV2PW5ldyBEYXRlKHksbSwwKS5nZXREYXRlKCksY2VsbHM9Jyc7WydTdW4nLCdNb24nLCdUdWUnLCdXZWQnLCdUaHUnLCdGcmknLCdTYXQnXS5mb3JFYWNoKGQ9PmNlbGxzKz1gPGRpdiBjbGFzcz1cImRvd1wiPiR7ZH08L2Rpdj5gKTtmb3IobGV0IGk9MDtpPDQyO2krKyl7bGV0IG4sZHQsbXV0PScnO2lmKGk8c3RhcnQpe249cHJldi1zdGFydCtpKzE7ZHQ9bmV3IERhdGUoeSxtLTEsbik7bXV0PScgbXV0ZWQnfWVsc2UgaWYoaT49c3RhcnQrZGF5cyl7bj1pLXN0YXJ0LWRheXMrMTtkdD1uZXcgRGF0ZSh5LG0rMSxuKTttdXQ9JyBtdXRlZCd9ZWxzZXtuPWktc3RhcnQrMTtkdD1uZXcgRGF0ZSh5LG0sbil9bGV0IGRzPWlzb0xvY2FsKGR0KSxldj1qZXdpc2hFdmVudChkdCksY2xzPWV2LmluY2x1ZGVzKCdTaGFiYm9zJyk/JyBzaGFiYm9zJzpldj8nIGhvbGlkYXknOicnLHM9c3VwcGVycy5maW5kKHg9PnguZGF0ZT09PWRzKTtjZWxscys9YDxidXR0b24gY2xhc3M9XCJkYXRlJHttdXR9JHtjbHN9XCIgb25jbGljaz1cImRhdGVUYXAoJyR7ZHN9JywnJHtldi5yZXBsYWNlQWxsKFwiJ1wiLFwiJiMzOTtcIil9JylcIj48c3BhbiBjbGFzcz1cIm5cIj4ke259PC9zcGFuPjxkaXYgc3R5bGU9XCJmb250LXNpemU6OXB4O2NvbG9yOiM3NDgwNzc7bWFyZ2luLXRvcDoycHhcIj4ke2hlYlNob3J0KGR0KX08L2Rpdj4ke2V2P2A8ZGl2IGNsYXNzPVwiZXZ0XCI+JHtldn08L2Rpdj5gOnM/YDxkaXYgY2xhc3M9XCJldnRcIiBzdHlsZT1cImNvbG9yOiMwZDdhNDNcIj4ke2VzYyhzLm5hbWUpfTwvZGl2PmA6Jyd9PC9idXR0b24+YH0kKCdjYWwnKS5pbm5lckhUTUw9Y2VsbHN9CmZ1bmN0aW9uIGRhdGVUYXAoZHMsZXYpe2lmKGV2KXtzdXBNb2RlPWV2LnRvTG93ZXJDYXNlKCkuaW5jbHVkZXMoJ3NoYWJib3MnKT8nc2hhYic6J3l0JztuYXYoJ3N1cHBlcnMnKTtkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCdbZGF0YS1zdXBdJykuZm9yRWFjaChiPT5iLmNsYXNzTGlzdC50b2dnbGUoJ29uJyxiLmRhdGFzZXQuc3VwPT09c3VwTW9kZSkpO3JlbmRlclN1cHBlcnMoKX1lbHNlIG9wZW5TdXBwZXJQaWNrZXIoZHMpfQoiIiIKCnMgPSBzWzpzdGFydF0gKyByZXBsYWNlbWVudCArIHNbZW5kOl0KcC53cml0ZV90ZXh0KHMpCgpiID0gUGF0aCgiZ291cm1ldC1nbGF0dC1iYXRjaDUuanMiKQp0ID0gYi5yZWFkX3RleHQoKQptYXJrZXIgPSAiICAvLyBGdWxsLXllYXIgSmV3aXNoIGNhbGVuZGFyLiIKaWYgbWFya2VyIGluIHQgYW5kICJDYWxlbmRhciBub3cgbGl2ZXMgZGlyZWN0bHkgaW4gaW5kZXguaHRtbC4iIG5vdCBpbiB0OgogICAgdCA9IHQucmVwbGFjZShtYXJrZXIsICIgIC8vIENhbGVuZGFyIG5vdyBsaXZlcyBkaXJlY3RseSBpbiBpbmRleC5odG1sLlxcbiAgaWYgKHR5cGVvZiByZW5kZXJTdXBwZXJzID09PSAnZnVuY3Rpb24nKSByZW5kZXJTdXBwZXJzKCk7XFxuICByZXR1cm47XFxuXFxuIiArIG1hcmtlciwgMSkKICAgIGIud3JpdGVfdGV4dCh0KQo=' | base64 -d > /tmp/patch_calendar.py
+          python /tmp/patch_calendar.py
       - name: Commit calendar update
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
