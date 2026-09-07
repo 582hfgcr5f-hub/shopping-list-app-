@@ -36,6 +36,7 @@ setTimeout(()=>{
  const getOverrides=()=>{try{return JSON.parse(localStorage.getItem(overrideKey)||'{}')}catch{return{}}};
  const saveOverrides=o=>localStorage.setItem(overrideKey,JSON.stringify(o));
  const baseOpenRecipe=openRecipe;
+ const editStyle=document.createElement('style');editStyle.textContent=`.recipeEditTop{margin-left:auto;margin-right:8px;border:1px solid #0d7a43!important;background:#fff!important;color:#0d7a43!important;display:inline-flex;align-items:center;gap:6px;padding:9px 13px!important}.recipeEditTop:before{content:'✎';font-size:16px}.recipeSection .ingredientTop{display:flex;justify-content:space-between;align-items:center}`;document.head.appendChild(editStyle);
  function effectiveRecipe(name){
    const base=RECIPES[name];if(!base)return null;
    const o=getOverrides()[name];
@@ -57,7 +58,9 @@ setTimeout(()=>{
    const recipe=effectiveRecipe(name);
    if(!recipe){baseOpenRecipe(name);return}
    const customized=!!getOverrides()[name];
-   $('detailBody').innerHTML=`<div class="recipeHero"><h3>${esc(name)}</h3><div class="recipeMeta">Supper • Ingredients & directions${customized?' • Customized':''}</div></div><div class="recipeSection"><div class="hdr"><h4 style="margin:0">Ingredients</h4><button class="btn" onclick="__editRecipeIngredients('${js(name)}')">Edit Ingredients</button></div><div class="ingredientList" style="margin-top:11px">${recipe.ingredients.map(x=>`<div class="ingredientItem"><span class="ingredientDot"></span><span>${esc(x[0])}</span></div>`).join('')}</div>${customized?`<button class="btn" style="margin-top:12px" onclick="__resetRecipeIngredients('${js(name)}')">Reset Ingredients</button>`:''}</div><div class="recipeSection"><h4>Directions</h4><div class="recipeSteps">${recipe.steps.map(x=>`<div class="recipeStep"><span>${esc(x)}</span></div>`).join('')}</div></div><div class="recipeActions"><button id="addRecipeBtn" class="btn green" onclick="addRecipeIngredients('${js(name)}')">Add Ingredients to Shopping List</button><button class="btn" onclick="chooseDayForRecipe('${js(name)}')">Choose a Day</button></div>`;
+   const header=document.querySelector('#detail .sheet > .hdr');
+   if(header){let edit=header.querySelector('.recipeEditTop');if(!edit){edit=document.createElement('button');edit.className='btn recipeEditTop';header.insertBefore(edit,header.querySelector('.round'))}edit.textContent='Edit';edit.onclick=()=>window.__editRecipeIngredients(name)}
+   $('detailBody').innerHTML=`<div class="recipeHero"><h3>${esc(name)}</h3><div class="recipeMeta">Supper • Ingredients & directions${customized?' • Customized':''}</div></div><div class="recipeSection"><h4>Ingredients</h4><div class="ingredientList" style="margin-top:11px">${recipe.ingredients.map(x=>`<div class="ingredientItem"><span class="ingredientDot"></span><span>${esc(x[0])}</span></div>`).join('')}</div>${customized?`<button class="btn" style="margin-top:12px" onclick="__resetRecipeIngredients('${js(name)}')">Reset Ingredients</button>`:''}</div><div class="recipeSection"><h4>Directions</h4><div class="recipeSteps">${recipe.steps.map(x=>`<div class="recipeStep"><span>${esc(x)}</span></div>`).join('')}</div></div><div class="recipeActions"><button id="addRecipeBtn" class="btn green" onclick="addRecipeIngredients('${js(name)}')">Add Ingredients to Shopping List</button><button class="btn" onclick="chooseDayForRecipe('${js(name)}')">Choose a Day</button></div>`;
    $('detail').classList.add('on');
  };
  addRecipeIngredients=function(name){
