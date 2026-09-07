@@ -2,16 +2,21 @@
  setTimeout(()=>{
   if(typeof $!=='function'||typeof N!=='function')return;
   let itemStore=localStorage.getItem('itemStoreV2')||'supermarket',shoppingStore=localStorage.getItem('shoppingStoreV1')||'supermarket',shoppingMode='buy';
+  const COSTCO_DEFAULTS=[
+   ['Paper Towels','Costco','🧻'],['Water','Costco','💧'],['Detergent','Costco','🧴'],['Soap','Costco','🧼'],['Shampoo','Costco','🧴'],['Water Bottles','Costco','💧'],['Sugar','Costco','🧂'],['Oil','Costco','🫙'],['Avocado Oil','Costco','🥑'],['Towels','Costco','🧺'],['Tissues','Costco','🤧'],['Soda','Costco','🥤'],['Pastrami','Costco','🥩'],['Potato Knishes','Costco','🥔'],['Avocado','Costco','🥑'],['Toothbrush','Costco','🪥'],['Toothpaste','Costco','🦷'],['Wipes','Costco','🧻'],['Pampers','Costco','👶']
+  ];
   let costcoItems=(()=>{try{return JSON.parse(localStorage.getItem('costcoItemsV1')||'[]')}catch{return[]}})();
+  COSTCO_DEFAULTS.forEach(d=>{if(!costcoItems.some(x=>N(x[0])===N(d[0])))costcoItems.push(d)});
   let costcoShop=(()=>{try{return JSON.parse(localStorage.getItem('costcoShopV2')||'{}')}catch{return{}}})();
   const saveCostco=()=>{localStorage.setItem('costcoItemsV1',JSON.stringify(costcoItems));localStorage.setItem('costcoShopV2',JSON.stringify(costcoShop))};
+  saveCostco();
   const style=document.createElement('style');style.textContent=`.storeTabs{display:flex;background:#edf1ee;border-radius:14px;padding:4px;gap:4px;margin:10px 0 12px}.storeTabs button{flex:1;border:0;background:transparent;border-radius:10px;padding:11px 7px;font-weight:900;color:#233129;font-size:14px}.storeTabs button.on{background:#0d7a43;color:#fff;box-shadow:0 1px 5px #0001}.storeHint{font-size:12px;color:#748077;margin:-3px 2px 8px}`;document.head.appendChild(style);
   const tabs=(scope,active)=>`<div class="storeTabs" data-store-scope="${scope}"><button data-store="supermarket" class="${active==='supermarket'?'on':''}">🛒 Supermarket</button><button data-store="costco" class="${active==='costco'?'on':''}">🏬 Costco</button></div>`;
   const ic=$('items')?.querySelector('.card'),sc=$('shopping')?.querySelector('.card');
   if(ic&&!ic.querySelector('[data-store-scope="items"]')){const h=ic.querySelector('.hdr');h.insertAdjacentHTML('afterend',tabs('items',itemStore));h.nextElementSibling.insertAdjacentHTML('afterend','<div class="storeHint" id="itemStoreHint"></div>')}
   if(sc&&!sc.querySelector('[data-store-scope="shopping"]'))sc.querySelector('.hdr').insertAdjacentHTML('afterend',tabs('shopping',shoppingStore));
   if($('customBtn'))$('customBtn').style.display='none';
-  const baseRenderCats=renderCats,baseRenderShop=renderShop,baseToggle=toggleShop,baseDel=delShop,baseQty=window.__shopQtyChange,baseUpdate=updateCount,baseOpenItem=openItemModal;
+  const baseRenderCats=renderCats,baseRenderShop=renderShop,baseToggle=toggleShop,baseDel=delShop,baseQty=window.__shopQtyChange;
   const storeQty={};
   function costcoRows(){
    $('backCats').classList.remove('show');$('itemTitle').textContent='Costco Items';$('cats').style.display='none';$('itemRows').style.display='block';
