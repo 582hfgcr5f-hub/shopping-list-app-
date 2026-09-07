@@ -3,7 +3,7 @@
   if(typeof $!=='function'||typeof N!=='function')return;
   let itemStore=localStorage.getItem('itemStoreV2')||'supermarket',shoppingStore=localStorage.getItem('shoppingStoreV1')||'supermarket',shoppingMode='buy';
   const COSTCO_DEFAULTS=[
-   ['Paper Towels','Costco','🧻'],['Water','Costco','💧'],['Detergent','Costco','🧴'],['Soap','Costco','🧼'],['Shampoo','Costco','🧴'],['Water Bottles','Costco','💧'],['Sugar','Costco','🧂'],['Oil','Costco','🫙'],['Avocado Oil','Costco','🥑'],['Towels','Costco','🧺'],['Tissues','Costco','🤧'],['Soda','Costco','🥤'],['Pastrami','Costco','🥩'],['Potato Knishes','Costco','🥔'],['Avocado','Costco','🥑'],['Toothbrush','Costco','🪥'],['Toothpaste','Costco','🦷'],['Wipes','Costco','🧻'],['Pampers','Costco','👶']
+   ['Paper Towels','Costco','🧻'],['Water','Costco','💧'],['Detergent','Costco','🧴'],['Soap','Costco','🧼'],['Shampoo','Costco','🧴'],['Water Bottles','Costco','💧'],['Sugar','Costco','🧂'],['Oil','Costco','🫙'],['Avocado Oil','Costco','🥑'],['Towels','Costco','🧺'],['Tissues','Costco','🤧'],['Soda','Costco','🥤'],['Pastrami','Costco','🥩'],['Potato Knishes','Costco','🥔'],['Avocado','Costco','🥑'],['Toothbrush','Costco','🪥'],['Toothpaste','Costco','🦷'],['Wipes','Costco','🧻'],['Pampers','Costco','👶'],['Garbage Bags','Costco','🗑️'],['Hot Cups','Costco','☕'],['Gloves','Costco','🧤'],['Apple Sauce','Costco','🍎'],['Ketchup','Costco','🍅'],['Peanut Butter','Costco','🥜']
   ];
   let costcoItems=(()=>{try{return JSON.parse(localStorage.getItem('costcoItemsV1')||'[]')}catch{return[]}})();
   COSTCO_DEFAULTS.forEach(d=>{if(!costcoItems.some(x=>N(x[0])===N(d[0])))costcoItems.push(d)});
