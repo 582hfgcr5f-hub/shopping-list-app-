@@ -8,7 +8,21 @@ setTimeout(()=>{
  ['shab','yt'].forEach(k=>['night','day'].forEach(meal=>{const old=H[k]&&H[k][meal]?H[k][meal]:{},next={};sectionOrder.forEach(s=>next[s]=Array.isArray(old[s])?old[s]:[]);Object.keys(old).forEach(s=>{if(!sectionOrder.includes(s)&&s!=='Drinks')next[s]=old[s]});H[k][meal]=next}));
  if(typeof save==='function')save('menusV3',H);
  if(typeof addMenuItem==='function')addMenuItem=function(k,meal){let section=prompt('Section: Appetizers, Starters, Main, Sides, or Desserts');if(!section)return;let key=Object.keys(H[k][meal]).find(x=>N(x)===N(section));if(!key){alert('Please choose Appetizers, Starters, Main, Sides, or Desserts.');return}let item=prompt('Item to add');if(!item)return;H[k][meal][key].push(item.trim());persist();renderSuppers()};
- const style=document.createElement('style');style.textContent='.date .evt{overflow-wrap:anywhere;word-break:normal}.date.shabbos .evt{font-size:8px;line-height:1.05}@media(max-width:430px){.cal{gap:3px}.date{min-width:0;padding:4px 2px}.date .n{font-size:12px}.date .evt{font-size:8px;line-height:1.05;margin-top:3px}}';document.head.appendChild(style);
+ const style=document.createElement('style');style.textContent=`
+ #home .card:has(#cal){overflow:hidden}
+ .cal{width:100%;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+ .cal>*{min-width:0;max-width:100%;box-sizing:border-box}
+ .date{width:100%;min-width:0;max-width:100%;overflow:hidden;text-align:center}
+ .date .evt{max-width:100%;overflow-wrap:break-word;word-break:normal;hyphens:auto}
+ @media(max-width:430px){
+   #home .card:has(#cal){padding-left:8px;padding-right:8px}
+   .cal{gap:3px!important}
+   .dow{font-size:10px}
+   .date{padding:4px 1px!important;min-height:68px}
+   .date .n{font-size:12px}
+   .date .evt{font-size:7px!important;line-height:1.05;margin-top:3px}
+ }
+ `;document.head.appendChild(style);
  const hebParts=d=>{const p=new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long'}).formatToParts(d),g=t=>p.find(x=>x.type===t)?.value||'';return{day:Number(g('day')),month:g('month')}};
  const yomTovFor=d=>{const h=hebParts(d),m=h.month,n=h.day;if(m==='Tishri'||m==='Tishrei'){if(n===1||n===2)return'Rosh Hashana';if(n===10)return'Yom Kippur';if(n===15||n===16)return'Sukkos';if(n===22)return'Shemini Atzeres';if(n===23)return'Simchas Torah'}if(m==='Nisan'&&(n===15||n===16||n===21||n===22))return'Pesach';if(m==='Sivan'&&(n===6||n===7))return'Shavuos';return''};
  const eventFor=d=>{const yt=yomTovFor(d);if(yt)return{name:yt,type:'yt'};if(d.getDay()===5)return{name:'Shabbos Night',type:'shabbos'};if(d.getDay()===6)return{name:'Shabbos Day',type:'shabbos'};return{name:'',type:''}};
