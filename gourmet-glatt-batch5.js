@@ -17,22 +17,23 @@ setTimeout(()=>{
  renderSuppers=function(){
    if(supMode==='shab'&&calendarMealView){
      document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup==='shab'));
-     const meal=calendarMealView;
-     const label=meal==='night'?'Friday Night':'Shabbos Day';
+     const meal=calendarMealView,label=meal==='night'?'Friday Night':'Shabbos Day';
      $('supContent').innerHTML=`<div style="margin:16px 3px 6px;font-weight:850;color:#748077">${label} Menu</div>${menuCard('shab',meal,label)}`;
      return;
    }
-   calendarMealView=null;
    baseRenderSuppers();
  };
  document.querySelectorAll('[data-sup]').forEach(b=>b.onclick=()=>{calendarMealView=null;supMode=b.dataset.sup;renderSuppers()});
  renderMonth=function(){let y=cal.getFullYear(),m=cal.getMonth();$('monthLabel').textContent=cal.toLocaleString(undefined,{month:'long',year:'numeric'});let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>cells+=`<div class="dow">${d}</div>`);for(let i=0;i<42;i++){let n,dt,mut='';if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}else{n=i-start+1;dt=new Date(y,m,n)}const ds=isoLocal(dt),event=eventFor(dt),s=suppers.find(x=>x.date===ds),cls=event.type==='yt'?' holiday':event.type==='shabbos'?' shabbos':'';cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${event.name.replaceAll("'","&#39;")}')"><span class="n">${n}</span>${event.name?`<div class="evt">${event.name}</div>`:''}${s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`}$('cal').innerHTML=cells};
  dateTap=function(ds,ev){
    if(ev==='Shabbos Night'||ev==='Shabbos Day'){
+     supMode='shab';
      calendarMealView=ev==='Shabbos Night'?'night':'day';
-     supMode='shab';nav('suppers');
-     document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup==='shab'));
-     renderSuppers();return;
+     document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='suppers'));
+     document.querySelectorAll('[data-nav]').forEach(x=>x.classList.toggle('on',x.dataset.nav==='suppers'));
+     $('title').textContent='Suppers';
+     renderSuppers();
+     return;
    }
    calendarMealView=null;
    if(ev){supMode='yt';nav('suppers');document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));renderSuppers();return}
