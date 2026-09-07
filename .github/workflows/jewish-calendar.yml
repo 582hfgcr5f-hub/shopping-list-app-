@@ -14,49 +14,73 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch calendar only
+      - name: Patch calendar directly into main app
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
           p=Path('index.html')
           s=p.read_text()
-          old="const HOL={'2026-09-04':'Shabbos Night','2026-09-05':'Shabbos Day','2026-09-11':'Erev Rosh Hashana','2026-09-12':'Rosh Hashana','2026-09-13':'Rosh Hashana','2026-09-18':'Shabbos Night','2026-09-19':'Shabbos Day','2026-09-20':'Erev Yom Kippur','2026-09-21':'Yom Kippur','2026-09-25':'Shabbos Night','2026-09-26':'Shabbos Day'};"
-          new="""let HOL={};
-let jewishCalendarLoaded={};
-async function loadJewishYear(year){
- if(jewishCalendarLoaded[year])return;
- jewishCalendarLoaded[year]=true;
- try{
-  const url=`https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&yt=G&maj=on&min=off&mod=off&nx=off&mf=on&ss=on&s=off&c=off&geo=none&i=off`;
-  const r=await fetch(url);if(!r.ok)throw new Error('Hebcal');
-  const data=await r.json();
-  (data.items||[]).forEach(e=>{
-   if(!e.date||!e.title)return;
-   const ds=e.date.slice(0,10),cat=(e.category||'').toLowerCase();
-   if(cat==='holiday'||cat==='fast'||cat==='roshchodesh'||cat==='mevarchim'||cat==='specialshabbat'){
-    HOL[ds]=HOL[ds]?HOL[ds]+' · '+e.title:e.title;
-   }
-  });
- }catch(e){console.warn('Jewish calendar unavailable',e)}
- renderMonth();
+
+          # Replace the September-only calendar data with a full-year Jewish calendar
+          # calculated locally in the browser. No visual layout changes.
+          s=re.sub(
+            r"const HOL=\{.*?\};\nfunction renderMonth\(\)\{.*?\}\nfunction dateTap\(ds,ev\)\{.*?\}\nfunction renderCats",
+            r'''function hebParts(dt){
+ const parts=new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long',year:'numeric'}).formatToParts(dt);
+ const get=t=>parts.find(p=>p.type===t)?.value||'';
+ return {day:Number(get('day')),month:get('month'),year:get('year')};
 }
-function shabbosLabel(dt){const day=dt.getDay();return day===5?'Shabbos Night':day===6?'Shabbos Day':'';}"""
-          if old in s:
-              s=s.replace(old,new,1)
-          elif 'async function loadJewishYear(year)' not in s:
-              raise SystemExit('calendar marker not found')
-          old2="let ds=isoLocal(dt),ev=HOL[ds]||'',cls=ev.includes('Shabbos')?' shabbos':ev?' holiday':'',s=suppers.find(x=>x.date===ds);"
-          new2="let ds=isoLocal(dt),jew=HOL[ds]||'',shab=shabbosLabel(dt),ev=[shab,jew].filter(Boolean).join(' · '),cls=shab?' shabbos':jew?' holiday':'',s=suppers.find(x=>x.date===ds);"
-          if old2 in s:s=s.replace(old2,new2,1)
-          elif 'shabbosLabel(dt)' not in s:raise SystemExit('month event marker not found')
-          old3="function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();"
-          new3="function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();loadJewishYear(y);"
-          if old3 in s:s=s.replace(old3,new3,1)
+function hebShort(dt){return new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'short'}).format(dt)}
+function yomTovName(dt){
+ const h=hebParts(dt),m=h.month,n=h.day;
+ if(m==='Tishri'||m==='Tishrei'){
+  if(n===1||n===2)return 'Rosh Hashana';
+  if(n===10)return 'Yom Kippur';
+  if(n===15||n===16)return 'Sukkos';
+  if(n===22)return 'Shemini Atzeres';
+  if(n===23)return 'Simchas Torah';
+ }
+ if(m==='Nisan'&&(n===15||n===16||n===21||n===22))return 'Pesach';
+ if(m==='Sivan'&&(n===6||n===7))return 'Shavuos';
+ return '';
+}
+function jewishEvent(dt){
+ const yt=yomTovName(dt);
+ if(yt)return yt;
+ if(dt.getDay()===6)return 'Shabbos Day';
+ if(dt.getDay()===5)return 'Shabbos Night';
+ return '';
+}
+function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();$('monthLabel').textContent=cal.toLocaleString(undefined,{month:'long',year:'numeric'});let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>cells+=`<div class="dow">${d}</div>`);for(let i=0;i<42;i++){let n,dt,mut='';if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}else{n=i-start+1;dt=new Date(y,m,n)}let ds=isoLocal(dt),ev=jewishEvent(dt),cls=ev.includes('Shabbos')?' shabbos':ev?' holiday':'',s=suppers.find(x=>x.date===ds);cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${ev.replaceAll("'","&#39;")}')"><span class="n">${n}</span><div style="font-size:9px;color:#748077;margin-top:2px">${hebShort(dt)}</div>${ev?`<div class="evt">${ev}</div>`:s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`}$('cal').innerHTML=cells}
+function dateTap(ds,ev){if(ev){supMode=ev.toLowerCase().includes('shabbos')?'shab':'yt';nav('suppers');document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));renderSuppers()}else openSupperPicker(ds)}
+function renderCats''',
+            s,
+            count=1,
+            flags=re.S
+          )
+
+          if 'function hebParts(dt)' not in s:
+              raise SystemExit('Could not patch main calendar')
           p.write_text(s)
+
+          # Disable the older calendar override in batch5 so the main calendar stays in control.
+          b=Path('gourmet-glatt-batch5.js')
+          t=b.read_text()
+          marker='  // Full-year Jewish calendar.'
+          if marker in t and '  // Calendar now lives directly in index.html.' not in t:
+              t=t.replace(marker,"  // Calendar now lives directly in index.html.\n  if (typeof renderSuppers === 'function') renderSuppers();\n  return;\n\n"+marker,1)
+              b.write_text(t)
           PY
       - name: Commit calendar update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          if git diff --cached --quiet; then echo "No changes needed"; else git commit -m "Make full calendar Jewish with Shabbos and Yom Tov" && git push; fi
+          git add index.html gourmet-glatt-batch5.js
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Put full-year Jewish calendar in main layout"
+            git push
+          fi
