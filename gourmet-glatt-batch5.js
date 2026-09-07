@@ -21,9 +21,10 @@ setTimeout(() => {
     let item = prompt('Item to add'); if (!item) return; H[k][meal][key].push(item.trim()); persist(); renderSuppers();
   };
 
-  // Jewish calendar: Hebrew date every day, Shabbos every Saturday, and major Yom Tovim.
+  // Full-year Jewish calendar. Hebrew dates are calculated for every day,
+  // Shabbos is calculated every week, and Yom Tov is calculated from Hebrew dates.
   const style = document.createElement('style');
-  style.textContent = `.date{min-height:88px;text-align:left;position:relative}.date .heb{display:block;font-size:10px;color:#6c786f;margin-top:2px;line-height:1.1}.date.shabbos{background:#eef8f1;border-color:#bcdcc7}.date.holiday{background:#f8f1fb;border-color:#ddc8e7}.date.erev{background:#fff8e9;border-color:#ead9aa}.date .jtag{font-size:9px;font-weight:900;margin-top:4px;line-height:1.05;color:#0d7a43}.date.holiday .jtag{color:#713c82}.date.erev .jtag{color:#8a6418}@media(max-width:430px){.date{min-height:82px}.date .heb{font-size:9px}.date .jtag{font-size:8px}}`;
+  style.textContent = `.date{min-height:92px;text-align:left;position:relative}.date .heb{display:block;font-size:10px;color:#6c786f;margin-top:2px;line-height:1.1}.date.shabbos{background:#eef8f1;border-color:#bcdcc7}.date.holiday{background:#f8f1fb;border-color:#ddc8e7}.date.erev{background:#fff8e9;border-color:#ead9aa}.date .jtag{font-size:9px;font-weight:900;margin-top:4px;line-height:1.05;color:#0d7a43}.date.holiday .jtag{color:#713c82}.date.erev .jtag{color:#8a6418}.jcalSub{font-size:11px;color:#748077;font-weight:750;margin-top:2px}@media(max-width:430px){.date{min-height:84px}.date .heb{font-size:9px}.date .jtag{font-size:8px}}`;
   document.head.appendChild(style);
 
   const hebParts = d => {
@@ -32,37 +33,61 @@ setTimeout(() => {
     return {day:Number(get('day')),month:get('month'),year:get('year')};
   };
   const hebLabel = d => new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'short'}).format(d);
-  const holidayFor = d => {
+  const majorYomTovFor = d => {
     const h=hebParts(d), m=h.month, n=h.day;
-    if(m==='Tishri' || m==='Tishrei'){
-      if(n===1||n===2)return 'Rosh Hashana'; if(n===10)return 'Yom Kippur';
-      if(n>=15&&n<=21)return n===15?'Sukkos':'Chol Hamoed Sukkos'; if(n===22)return 'Shemini Atzeres'; if(n===23)return 'Simchas Torah';
+    if(m==='Tishri'||m==='Tishrei'){
+      if(n===1||n===2)return 'Rosh Hashana';
+      if(n===10)return 'Yom Kippur';
+      if(n===15||n===16)return 'Sukkos';
+      if(n===22)return 'Shemini Atzeres';
+      if(n===23)return 'Simchas Torah';
     }
     if(m==='Nisan'){
-      if(n>=15&&n<=22){if(n===15||n===16||n===21||n===22)return 'Pesach';return 'Chol Hamoed Pesach';}
+      if(n===15||n===16)return 'Pesach';
+      if(n===21||n===22)return 'Pesach';
     }
     if(m==='Sivan'&&(n===6||n===7))return 'Shavuos';
     return '';
   };
+  const jewishEventFor = d => {
+    const yt=majorYomTovFor(d);
+    if(yt)return {name:yt,type:'yt'};
+    const tomorrow=new Date(d); tomorrow.setDate(d.getDate()+1);
+    const tomorrowYt=majorYomTovFor(tomorrow);
+    if(tomorrowYt)return {name:`Erev ${tomorrowYt}`,type:'erev'};
+    if(d.getDay()===6)return {name:'Shabbos',type:'shabbos'};
+    if(d.getDay()===5)return {name:'Erev Shabbos',type:'erev'};
+    return {name:'',type:''};
+  };
+
   renderMonth = function(){
     let y=cal.getFullYear(),m=cal.getMonth();
     const mid=new Date(y,m,15), hp=hebParts(mid);
-    $('monthLabel').innerHTML=`${cal.toLocaleString(undefined,{month:'long',year:'numeric'})}<div style="font-size:12px;color:#748077;font-weight:750;margin-top:2px">${hp.month} ${hp.year}</div>`;
+    $('monthLabel').innerHTML=`${cal.toLocaleString(undefined,{month:'long',year:'numeric'})}<div class="jcalSub">Jewish Calendar • ${hp.month} ${hp.year}</div>`;
     let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';
     ['Sun','Mon','Tue','Wed','Thu','Fri','Shabbos'].forEach(d=>cells+=`<div class="dow">${d}</div>`);
     for(let i=0;i<42;i++){
-      let n,dt,mut=''; if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}else{n=i-start+1;dt=new Date(y,m,n)}
-      let ds=isoLocal(dt), holiday=holidayFor(dt), dow=dt.getDay(), ev=holiday || (dow===6?'Shabbos':dow===5?'Erev Shabbos':''), cls=holiday?' holiday':dow===6?' shabbos':dow===5?' erev':'',s=suppers.find(x=>x.date===ds);
-      const tag=holiday?holiday:(dow===6?'🕯️ Shabbos':dow===5?'🕯️ Erev Shabbos':'');
-      cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${ev.replaceAll("'","&#39;")}')"><span class="n">${n}</span><span class="heb">${hebLabel(dt)}</span>${tag?`<div class="jtag">${tag}</div>`:''}${s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`;
+      let n,dt,mut='';
+      if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}
+      else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}
+      else{n=i-start+1;dt=new Date(y,m,n)}
+      let ds=isoLocal(dt), event=jewishEventFor(dt), cls=event.type==='yt'?' holiday':event.type==='shabbos'?' shabbos':event.type==='erev'?' erev':'',s=suppers.find(x=>x.date===ds);
+      const icon=event.type==='shabbos'||event.name==='Erev Shabbos'?'🕯️ ':event.type==='yt'?'✡️ ':'';
+      cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${event.name.replaceAll("'","&#39;")}')"><span class="n">${n}</span><span class="heb">${hebLabel(dt)}</span>${event.name?`<div class="jtag">${icon}${event.name}</div>`:''}${s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`;
     }
     $('cal').innerHTML=cells;
   };
+
   dateTap = function(ds,ev){
-    if(ev && (ev==='Shabbos'||ev.includes('Rosh Hashana')||ev.includes('Yom Kippur')||ev.includes('Sukkos')||ev.includes('Atzeres')||ev.includes('Torah')||ev.includes('Pesach')||ev.includes('Shavuos'))){
-      supMode=ev==='Shabbos'?'shab':'yt'; nav('suppers'); document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode)); renderSuppers();
-    } else openSupperPicker(ds);
+    if(ev==='Shabbos'){
+      supMode='shab'; nav('suppers'); document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode)); renderSuppers(); return;
+    }
+    if(ev && !ev.startsWith('Erev ')){
+      supMode='yt'; nav('suppers'); document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode)); renderSuppers(); return;
+    }
+    openSupperPicker(ds);
   };
+
   renderMonth();
   if (typeof renderSuppers === 'function') renderSuppers();
 }, 0);
