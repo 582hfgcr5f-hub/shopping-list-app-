@@ -150,8 +150,33 @@ function nav(id){document.querySelectorAll('.screen').forEach(x=>x.classList.tog
 document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
 function isoLocal(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function renderWeek(){let out='',d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());for(let i=0;i<7;i++){let x=new Date(d);x.setDate(d.getDate()+i);let ds=isoLocal(x),s=suppers.find(y=>y.date===ds);out+=`<button class="day ${s?'has':''}" onclick="openSupperPicker('${ds}')"><b>${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}</b>${s?`<span style="font-size:11px;margin-top:8px">${esc(s.name)}</span>`:`<span class="plus">+</span>`}</button>`}$('week').innerHTML=out}
-const HOL={'2026-09-04':'Shabbos Night','2026-09-05':'Shabbos Day','2026-09-11':'Erev Rosh Hashana','2026-09-12':'Rosh Hashana','2026-09-13':'Rosh Hashana','2026-09-18':'Shabbos Night','2026-09-19':'Shabbos Day','2026-09-20':'Erev Yom Kippur','2026-09-21':'Yom Kippur','2026-09-25':'Shabbos Night','2026-09-26':'Shabbos Day'};
-function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();$('monthLabel').textContent=cal.toLocaleString(undefined,{month:'long',year:'numeric'});let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>cells+=`<div class="dow">${d}</div>`);for(let i=0;i<42;i++){let n,dt,mut='';if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}else{n=i-start+1;dt=new Date(y,m,n)}let ds=isoLocal(dt),ev=HOL[ds]||'',cls=ev.includes('Shabbos')?' shabbos':ev?' holiday':'',s=suppers.find(x=>x.date===ds);cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${ev.replaceAll("'","&#39;")}')"><span class="n">${n}</span>${ev?`<div class="evt">${ev}</div>`:s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`}$('cal').innerHTML=cells}
+function hebParts(dt){
+ const parts=new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long',year:'numeric'}).formatToParts(dt);
+ const get=t=>parts.find(p=>p.type===t)?.value||'';
+ return {day:Number(get('day')),month:get('month'),year:get('year')};
+}
+function hebShort(dt){return new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'short'}).format(dt)}
+function yomTovName(dt){
+ const h=hebParts(dt),m=h.month,n=h.day;
+ if(m==='Tishri'||m==='Tishrei'){
+  if(n===1||n===2)return 'Rosh Hashana';
+  if(n===10)return 'Yom Kippur';
+  if(n===15||n===16)return 'Sukkos';
+  if(n===22)return 'Shemini Atzeres';
+  if(n===23)return 'Simchas Torah';
+ }
+ if(m==='Nisan'&&(n===15||n===16||n===21||n===22))return 'Pesach';
+ if(m==='Sivan'&&(n===6||n===7))return 'Shavuos';
+ return '';
+}
+function jewishEvent(dt){
+ const yt=yomTovName(dt);
+ if(yt)return yt;
+ if(dt.getDay()===6)return 'Shabbos Day';
+ if(dt.getDay()===5)return 'Shabbos Night';
+ return '';
+}
+function renderMonth(){let y=cal.getFullYear(),m=cal.getMonth();$('monthLabel').textContent=cal.toLocaleString(undefined,{month:'long',year:'numeric'});let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells='';['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>cells+=`<div class="dow">${d}</div>`);for(let i=0;i<42;i++){let n,dt,mut='';if(i<start){n=prev-start+i+1;dt=new Date(y,m-1,n);mut=' muted'}else if(i>=start+days){n=i-start-days+1;dt=new Date(y,m+1,n);mut=' muted'}else{n=i-start+1;dt=new Date(y,m,n)}let ds=isoLocal(dt),ev=jewishEvent(dt),cls=ev.includes('Shabbos')?' shabbos':ev?' holiday':'',s=suppers.find(x=>x.date===ds);cells+=`<button class="date${mut}${cls}" onclick="dateTap('${ds}','${ev.replaceAll("'","&#39;")}')"><span class="n">${n}</span><div style="font-size:9px;color:#748077;margin-top:2px">${hebShort(dt)}</div>${ev?`<div class="evt">${ev}</div>`:s?`<div class="evt" style="color:#0d7a43">${esc(s.name)}</div>`:''}</button>`}$('cal').innerHTML=cells}
 function dateTap(ds,ev){if(ev){supMode=ev.toLowerCase().includes('shabbos')?'shab':'yt';nav('suppers');document.querySelectorAll('[data-sup]').forEach(b=>b.classList.toggle('on',b.dataset.sup===supMode));renderSuppers()}else openSupperPicker(ds)}
 function renderCats(){let term=N($('search').value);if(selectedCat&&!term){$('backCats').classList.add('show');$('itemTitle').textContent=selectedCat;$('cats').style.display='none';$('itemRows').style.display='block';renderItemRows(items.filter(i=>i[1]===selectedCat));return}$('backCats').classList.remove('show');$('itemTitle').textContent='Items';$('cats').style.display='grid';$('itemRows').style.display='none';let data=CAT.filter(c=>!term||N(c[0]).includes(term)||items.some(i=>i[1]===c[0]&&N(i[0]).includes(term)));$('cats').innerHTML=data.map(c=>`<button class="cat" onclick="openCat('${c[0]}')"><span class="ico">${c[1]}</span>${c[0]}</button>`).join('');if(term){$('cats').style.display='none';$('itemRows').style.display='block';renderItemRows(items.filter(i=>N(i[0]).includes(term)||N(i[1]).includes(term)))}}
 function openCat(c){selectedCat=c;$('search').value='';renderCats()}
