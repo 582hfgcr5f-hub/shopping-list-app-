@@ -1,9 +1,9 @@
 name: Shopping release checks
 on:
   pull_request:
-    branches: [main]
+    branches: [main, preview/reliability-phase1]
   push:
-    branches: [preview/reliability-phase1]
+    branches: [preview/reliability-phase1, preview/clean-modern]
 permissions:
   contents: read
 jobs:
@@ -21,7 +21,14 @@ jobs:
           python-version: '3.12'
       - run: pip install -r tests/requirements.txt
       - run: python -m playwright install --with-deps ${{ matrix.browser }}
-      - name: Verify approved app remains intact
+      - name: Verify existing app and modern interface
         run: python -m unittest discover -s tests -v
         env:
           BROWSER_ENGINE: ${{ matrix.browser }}
+      - name: Save actual browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modern-screens-${{ matrix.browser }}
+          path: screenshots/
+          if-no-files-found: ignore

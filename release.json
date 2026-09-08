@@ -1,11 +1,1 @@
-{
-  "version": "reliability-preview-20260908-1",
-  "approvedBaseline": "af8456db615481503556071cccdc3cc14231a9de",
-  "restoreBranch": "restore/approved-af8456d",
-  "scope": "Startup reliability and read-only manual backup export; no layout redesign",
-  "bundledRuntime": {
-    "path": "vendor/stable-a68edc6.js",
-    "sourceCommit": "a68edc6622963242a3092dba865ae0c079a90d1f",
-    "gitBlobSha": "736da81e143603b400aaf07ded7bf705128a5d40"
-  }
-}
+{"version":"clean-modern-preview-20260908-1","stage":"preview","baseline":"af8456db615481503556071cccdc3cc14231a9de","parent_preview":"0b944a24ecf2ac71044f4e7f86cc06bc8b01af4b","requires_preview_approval":true,"data_migration":false,"features":["reliable-local-runtime","manual-backup-export","clean-modern-interface"],"excluded":["start-shopping","favorites","cloud-sync"]}
