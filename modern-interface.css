@@ -1,0 +1,91 @@
+/* Clean & modern: presentation only. Existing data and store behavior stay intact. */
+body.modernApp{--blue:#0667ff;--ink:#111c30;--muted:#61708a;--line:#e7edf5;--soft:#f1f7ff;background:radial-gradient(ellipse at 15% 0,#edf6ff 0,transparent 40%),#f8fafc;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
+.modernApp button{font-family:inherit;cursor:pointer;touch-action:manipulation;color:inherit}
+.modernApp button:focus-visible,.modernApp input:focus-visible,.modernApp select:focus-visible,.modernApp textarea:focus-visible{outline:3px solid #89baff;outline-offset:3px}
+.modernApp .app{max-width:920px;padding:calc(22px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
+.modernApp .top{gap:12px;min-width:0}
+.modernApp .top h1{font-size:clamp(26px,6.8vw,34px);line-height:1.15;font-weight:800;letter-spacing:-1.2px}
+.modernApp .badge{flex-shrink:0;background:#e8f3ff;color:#0058dc;font-size:13px;border-radius:24px;padding:10px 12px;white-space:nowrap}
+.modernApp .modernSubtitle{font-size:13px;color:var(--muted);margin:9px 0 22px;line-height:1.45;letter-spacing:.05px}
+.modernApp .card{border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 4px 18px #20457206,0 1px 3px #20457204;padding:16px;margin:16px 0;min-width:0}
+.modernApp h2,.modernApp h3{letter-spacing:-.45px;font-weight:800}
+.modernApp .hdr h2{font-size:21px}.modernApp .hdr h3{font-size:18px}
+.modernApp .btn{background:#f0f5fc;color:#274267;border:1px solid transparent;border-radius:12px;font-size:13px;min-height:40px;line-height:1.25}
+.modernApp .green{background:var(--blue);color:white;box-shadow:0 3px 8px #0667ff15}
+.modernApp .danger{background:#fff2f2;color:#b53a42}
+.modernApp .sub{color:var(--muted);line-height:1.4}
+.modernApp input,.modernApp select,.modernApp textarea{background:#f8faff;border-color:#e0e8f3;border-radius:13px;color:var(--ink);font-size:16px}
+.modernApp input::placeholder,.modernApp textarea::placeholder{color:#7c889d}
+.modernApp #search{padding:13px 14px;margin:12px 0 6px;background:#f5f8fc}
+.modernApp .storeTabs{padding:5px;gap:5px;background:#f1f5fb;border:1px solid #e6edf7;border-radius:16px;margin:14px 0 12px}
+.modernApp .storeTabs button{min-height:48px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;border-radius:12px;padding:8px 7px;color:#465672;font-size:14px;font-weight:750}
+.modernApp .storeTabs button.on{background:white;border-color:#8ab7ff;box-shadow:0 2px 7px #2166c710;color:#0058dc}
+.modernApp .modernTabStore{width:26px;height:26px;flex-shrink:0}.modernApp .modernCostcoLogo{display:block;width:104px;height:38px;object-fit:contain}.modernApp .storeTabs .modernCostcoLogo{width:88px;height:32px}
+.modernApp .modernLogoFallback{font-size:22px;font-weight:900;font-style:italic;color:#cf1231}
+.modernApp .storeHint{font-size:12px;color:var(--muted);margin:8px 2px 12px}
+.modernApp .modernStoreCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.modernApp .modernStoreCard{border:1px solid #e1ebf8;border-radius:20px;padding:18px;text-align:left;min-height:143px;background:linear-gradient(135deg,#edf6ff,#f7fbff);box-shadow:0 4px 15px #20457205;position:relative;overflow:hidden}
+.modernApp .modernStoreCard[data-home-store="costco"]{background:linear-gradient(135deg,#fff,#f5f8fc)}
+.modernApp .modernStoreArtwork{height:49px;display:flex;align-items:center;margin-bottom:12px}.modernApp .modernStoreArtwork svg{width:50px;height:50px}
+.modernApp .modernStoreCard b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px}
+.modernApp .modernStoreCard small{display:block;color:#536887;font-size:12px;margin-top:5px}
+.modernApp .modernStoreArrow{position:absolute;bottom:26px;right:13px;color:var(--blue);width:18px;height:18px}
+.modernApp .modernHeading{display:flex;gap:10px;align-items:center;min-width:0}.modernApp .modernHeadingText{min-width:0}
+.modernApp .modernHeadingIcon{color:var(--blue);width:24px;height:27px;flex:0 0 24px}
+.modernApp .modernHeading p{color:var(--muted);font-size:11px;margin:4px 0 0;line-height:1.45}
+.modernApp .modernSectionTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+.modernApp .modernSectionTop h2{font-size:19px;margin:0;line-height:1.2}
+.modernApp .modernTextButton{border:0;background:transparent;color:#005fe8;font-size:12px;padding:8px 0;min-height:36px;white-space:nowrap;font-weight:600}
+.modernApp #homeWeekCard .hdr{margin-bottom:12px;gap:8px}
+.modernApp #homeWeekCard .hdr h2{font-size:20px}
+.modernApp #addSupperHome{padding:10px 11px;font-size:12px;white-space:nowrap}
+.modernApp .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;overflow:visible;padding:0;margin-top:8px}
+.modernApp .day{width:100%;min-width:0;min-height:88px;height:auto;padding:9px 2px 7px;border-radius:12px;border-color:#e8eef9;background:#f8fbff;color:#0861e7;overflow:hidden}
+.modernApp .day b{font-size:11px;font-weight:700}.modernApp .day .modernWeekDate{font-size:10px;color:#536b90;margin-top:3px}
+.modernApp .day .plus{width:26px;height:26px;background:#e5f0ff;color:var(--blue);margin-top:8px;font-size:18px}
+.modernApp .day>span:not(.plus):not(.modernWeekDate){font-size:9px!important;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;line-height:1.25;word-break:normal}
+.modernApp .day.has{background:#eaf3ff;border-color:#bbd6ff}.modernApp .day.is-today{border-color:#528ffd}
+.modernApp .modernRecipeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.modernApp .modernRecipeTile{min-width:0;border:0;background:transparent;padding:0;text-align:left}
+.modernApp .modernRecipeArt{height:90px;border-radius:13px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(135deg,#f0f6ff,#e8f1ff);font-size:30px;margin-bottom:8px}
+.modernApp .modernRecipeArt img{width:100%;height:100%;object-fit:cover;display:block}
+.modernApp .modernRecipeTile b{font-size:12px;line-height:1.4;display:block;font-weight:700}.modernApp .modernRecipeTile small{display:block;color:#697b94;font-size:10px;margin-top:3px}
+.modernApp .modernListRow{width:100%;display:flex;align-items:center;gap:11px;text-align:left;background:transparent;border:0;border-top:1px solid #edf2f8;padding:12px 0}
+.modernApp .modernListRow .pic{background:#f4f7fc}.modernApp .modernListRow b{font-size:13px;line-height:1.4}.modernApp .modernListRow small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.modernApp .modernQtyLabel{font-size:11px;font-weight:750;color:#365983;background:#edf5ff;border-radius:8px;padding:7px;white-space:nowrap}
+.modernApp .modernEmpty{padding:12px 0 3px;color:var(--muted);font-size:13px;line-height:1.6}
+.modernApp #homeCalendar{scroll-margin-top:16px;padding:16px!important}
+.modernApp .monthHdr{margin:0 0 17px;gap:7px}.modernApp .monthHdr h2{font-size:21px;text-align:center;letter-spacing:-.65px;margin:8px 0}
+.modernApp .monthHdr button{width:36px;height:36px;flex-shrink:0;background:#eaf3ff;color:var(--blue);font-size:24px;display:grid;place-items:center;padding:0}
+.modernApp .cal{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;width:100%;min-width:0}
+.modernApp .dow{font-size:11px;color:#53627d;font-weight:650;padding-bottom:4px}
+.modernApp .date{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;border:1px solid #e6ebf2;border-radius:11px;min-height:81px;padding:9px 1px 6px!important;overflow:hidden;color:var(--ink);min-width:0}
+.modernApp .date .n{font-size:13px;font-weight:750;line-height:1.2}.modernApp .date.muted{opacity:.42;background:#f7f9fc}
+.modernApp .date.shabbos{background:#edf9f0;border-color:#deeee1}.modernApp .date.holiday{background:#f8eefd;border-color:#f0e0f8}
+.modernApp .date .evt{font-size:clamp(7px,2.05vw,10px)!important;line-height:1.35!important;font-weight:650;letter-spacing:-.1px;max-width:100%;margin-top:8px;word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important;color:#405976}
+.modernApp .date.holiday .evt{color:#71408b}.modernApp .date.shabbos .evt{color:#2b5840}.modernApp .date .evt+.evt{margin-top:3px;max-height:26px;overflow:hidden}
+.modernApp .date.is-today{border:2px solid #4389ff;box-shadow:0 0 0 2px #0667ff0c}.modernApp .date.is-today .n{color:#005bdd}
+.modernApp .modernCalendarLegend{display:flex;gap:14px;margin:14px 1px 0;color:var(--muted);font-size:10px;align-items:center}
+.modernApp .modernCalendarLegend span{display:flex;align-items:center;gap:5px}.modernApp .modernDot{width:9px;height:9px;border-radius:50%;background:#bce7c9;display:inline-block;flex-shrink:0}.modernApp .modernDot.holiday{background:#e7c4f6}
+.modernApp .modernEvent{display:grid;grid-template-columns:10px 84px 1fr 14px;gap:9px;align-items:center;width:100%;border:0;border-top:1px solid #edf1f7;background:white;padding:15px 0;text-align:left;font-size:12px;min-height:49px}
+.modernApp .modernEvent strong{font-size:12px;font-weight:700}.modernApp .modernEvent span{color:#596b87;line-height:1.35}.modernApp .modernEvent svg{width:14px;color:#6984a8}
+.modernApp .cats{gap:11px;margin-top:15px}.modernApp .cat{border-color:#e6edf7;border-radius:16px;padding:18px;font-size:15px;color:#22334f;background:linear-gradient(140deg,#fff,#f9fbff);box-shadow:0 2px 7px #18365803}.modernApp .cat .ico{font-size:27px;margin-bottom:10px}
+.modernApp .backCats{background:#eaf3ff;color:#0761da;font-size:11px;padding:9px}
+.modernApp .itemrow,.modernApp .shoprow{gap:9px;padding:13px 0;min-height:76px;border-bottom-color:#edf1f7}
+.modernApp .grow b{font-size:14px;line-height:1.4;font-weight:700;word-break:normal;overflow-wrap:break-word}.modernApp .grow .sub{font-size:11px;display:block;margin-top:2px}
+.modernApp .pic{width:44px;height:44px;border-radius:12px;background:#f2f6fb}.modernApp .pic img{object-fit:contain;background:white}
+.modernApp .itemAddWrap{gap:7px!important}.modernApp .itemQty,.modernApp .shopQty{gap:3px}
+.modernApp .itemQty button,.modernApp .shopQty button{width:27px;height:32px;border:1px solid #e4edf9;border-radius:8px;background:#f2f7ff;color:var(--blue);font-size:18px;font-weight:650}
+.modernApp .itemQty span,.modernApp .shopQty span{min-width:18px;font-size:12px;color:#192e4c}.modernApp .pill{padding:9px 11px;min-height:35px;border-radius:10px;background:var(--blue);color:#fff;font-size:12px;white-space:nowrap}
+.modernApp .check{border-color:#cddcf0;flex-shrink:0;width:28px;height:28px}.modernApp .check.on{background:var(--blue);border-color:var(--blue)}
+.modernApp .seg,.modernApp .supTabs,.modernApp .mealTabs{background:#edf3fb;border:1px solid #e5edf7;border-radius:15px;padding:5px;gap:4px}
+.modernApp .seg button,.modernApp .supTabs button,.modernApp .mealTabs button{font-size:13px;color:#516582;font-weight:700;min-height:39px;border-radius:10px}
+.modernApp .seg .on,.modernApp .supTabs .on,.modernApp .mealTabs .on{background:#fff;color:#005ddf;box-shadow:0 2px 6px #244f8310}
+.modernApp .menuCard{background:#fff;border-color:#e0eafa;box-shadow:0 3px 12px #18365805;border-radius:18px}.modernApp .menuHdr h3{font-size:23px}.modernApp .menuRow{border-bottom-color:#e9eff7;grid-template-columns:99px minmax(0,1fr);font-size:14px;line-height:1.55}.modernApp .menuRow b{color:#2b466c}.modernApp .menuDate{color:#506c91}
+.modernApp .listbtn{border-color:#e4ecf7;border-radius:15px;color:#213753;line-height:1.5}.modernApp .listbtn:after{color:#4577b9}
+.modernApp .sheet{background:#fff;border:1px solid #e6edf8;box-shadow:0 -10px 50px #16274715;border-radius:24px 24px 0 0}.modernApp .round{background:#eef5fe;color:#0866ec}.modernApp .recipeHero{background:linear-gradient(140deg,#f7fbff,#eef5ff);border-color:#dae8fb}.modernApp .recipeMeta{color:#657b99}.modernApp .recipeSection{border-color:#e2eaf5}.modernApp .recipeEditTop{border-color:#0870fa!important;color:#0861e7!important;background:white!important}.modernApp .ingredientDot{background:var(--blue)}.modernApp .recipeStep:before{background:#ebf3ff;color:#0861e7}
+.modernApp .bottom{background:#ffffffed;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #e5edf8;padding:8px max(9px,calc((100vw - 920px)/2)) calc(8px + env(safe-area-inset-bottom));box-shadow:0 -3px 18px #18365804;gap:4px}
+.modernApp .bottom button{padding:8px 2px 7px;border-radius:14px;color:#63738d;font-size:11px;font-weight:600;min-height:57px}.modernApp .bottom button.on{background:#eaf3ff;color:#005ded}.modernApp .bottom .ico{height:27px;margin-bottom:4px;display:grid;place-items:center}.modernApp .bottom .ico svg{width:23px;height:23px}
+@media(max-width:359px){.modernApp .app{padding-left:12px;padding-right:12px}.modernApp .card{padding:12px}.modernApp #homeCalendar{padding:11px!important}.modernApp .modernStoreCard{padding:14px;min-height:134px}.modernApp .modernStoreCard b{font-size:15px}.modernApp .modernStoreCard small{font-size:11px}.modernApp .modernStoreCards{gap:9px}.modernApp #homeWeekCard .modernHeading p{display:none}.modernApp .modernHeading{gap:7px}.modernApp .modernHeadingIcon{width:20px;flex-basis:20px}.modernApp #homeWeekCard h2{font-size:18px!important}.modernApp .modernRecipeArt{height:75px}.modernApp .itemrow,.modernApp .shoprow{gap:6px}.modernApp .pic{width:35px;height:35px}.modernApp .itemAddWrap{gap:4px!important}.modernApp .itemQty button,.modernApp .shopQty button{width:24px;height:31px}.modernApp .pill{padding:8px}.modernApp .shoprow>.btn{padding:7px}.modernApp .storeTabs button{font-size:12px}.modernApp .modernTabStore{width:22px;height:22px}.modernApp .monthHdr h2{font-size:19px}.modernApp .modernEvent{grid-template-columns:9px 73px 1fr 13px;gap:7px}}
+@media(min-width:700px){.modernApp .app{padding-top:38px}.modernApp .modernHome.screen.on{display:grid;grid-template-columns:1fr 1fr;column-gap:18px;align-items:start}.modernApp .modernStoreCards,.modernApp #homeWeekCard,.modernApp #homeCalendar,.modernApp #homeUpcoming{grid-column:1/-1}.modernApp .modernStoreCard{min-height:155px;padding:23px}.modernApp .modernHome>.card{margin:0 0 18px}.modernApp .day{min-height:93px}.modernApp .date{min-height:95px}.modernApp .date .evt{font-size:11px!important}.modernApp .cats{grid-template-columns:repeat(3,minmax(0,1fr))}.modernApp .modernRecipeArt{height:96px}.modernApp .itemQty button,.modernApp .shopQty button{width:32px;height:34px}}
+@media(prefers-reduced-motion:no-preference){.modernApp .btn,.modernApp .pill,.modernApp .modernStoreCard,.modernApp .cat{transition:background .15s,box-shadow .15s,transform .15s}.modernApp .modernStoreCard:active,.modernApp .cat:active{transform:scale(.985)}}
