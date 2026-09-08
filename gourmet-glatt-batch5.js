@@ -1,3 +1,3 @@
 document.write('<script src="https://cdn.jsdelivr.net/gh/582hfgcr5f-hub/shopping-list-app-@a68edc6622963242a3092dba865ae0c079a90d1f/gourmet-glatt-batch5.js"><\/script>');
-document.write('<script src="store-tabs.js"><\/script>');
-document.write('<script src="costco-pictures.js"><\/script>');
+document.write('<script src="store-tabs.js?v=20260907-2"><\/script>');
+document.write('<script src="costco-pictures.js?v=20260907-2"><\/script>');
