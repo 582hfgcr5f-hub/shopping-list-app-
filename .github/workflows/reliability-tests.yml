@@ -1,0 +1,27 @@
+name: Shopping release checks
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [preview/reliability-phase1]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r tests/requirements.txt
+      - run: python -m playwright install --with-deps ${{ matrix.browser }}
+      - name: Verify approved app remains intact
+        run: python -m unittest discover -s tests -v
+        env:
+          BROWSER_ENGINE: ${{ matrix.browser }}
