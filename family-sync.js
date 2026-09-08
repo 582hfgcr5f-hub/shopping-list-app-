@@ -1,16 +1,17 @@
 (()=>{setTimeout(async()=>{
  const URL='https://jaigrtytkwunnhjyyedn.supabase.co',KEY='sb_publishable_Y6MGLD8vjitjT8b-CmLA-w_rLpAYj0I',HOUSE='fonfeder-home';
- const KEYS=['shopV2','costcoShopV2','shoppingFavoritesV1'];let applying=false,timer=null,last='';
+ // Base app uses shopV6 for Supermarket. Costco remains costcoShopV2.
+ const KEYS=['shopV6','costcoShopV2','shoppingFavoritesV1'];let applying=false,timer=null,last='';
  const style=document.createElement('style');style.textContent=`.syncPill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:850;padding:6px 9px;border-radius:999px;background:#eef5ff;color:#1769e8;margin-left:7px}.syncPill:before{content:'';width:6px;height:6px;border-radius:50%;background:#23b26d}.syncPill.wait:before{background:#e5a72d}.syncPill.err{background:#fff0ed;color:#c54b36}.syncPill.err:before{background:#df5a43}`;document.head.appendChild(style);
  function pill(text,cls=''){let p=document.querySelector('.syncPill');if(!p){p=document.createElement('span');p.className='syncPill';const h=document.querySelector('.top h1');h?.insertAdjacentElement('afterend',p)}p.className='syncPill '+cls;p.textContent=text}
  function snapshot(){const d={};KEYS.forEach(k=>{try{d[k]=JSON.parse(localStorage.getItem(k)||'null')}catch{d[k]=null}});return d}
- function apply(d){if(!d||typeof d!=='object')return;applying=true;KEYS.forEach(k=>{if(d[k]!==undefined&&d[k]!==null)localStorage.setItem(k,JSON.stringify(d[k]))});setTimeout(()=>{applying=false;try{if(typeof renderShop==='function')renderShop();if(typeof renderCats==='function')renderCats()}catch{}location.reload()},80)}
+ function normalizeRemote(d){if(!d||typeof d!=='object')return d;const x={...d};if(x.shopV6==null&&x.shopV2!=null)x.shopV6=x.shopV2;delete x.shopV2;return x}
+ function apply(raw){const d=normalizeRemote(raw);if(!d||typeof d!=='object')return;applying=true;KEYS.forEach(k=>{if(d[k]!==undefined&&d[k]!==null)localStorage.setItem(k,JSON.stringify(d[k]))});setTimeout(()=>{applying=false;location.reload()},80)}
  const headers={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
- async function getRemote(){const r=await fetch(`${URL}/rest/v1/shopping_state?household_id=eq.${encodeURIComponent(HOUSE)}&select=data,updated_at`,{headers});if(!r.ok)throw new Error('read '+r.status);return(await r.json())[0]}
+ async function getRemote(){const r=await fetch(`${URL}/rest/v1/shopping_state?household_id=eq.${encodeURIComponent(HOUSE)}&select=data,updated_at`,{headers});if(!r.ok)throw new Error('read '+r.status);const row=(await r.json())[0];if(row)row.data=normalizeRemote(row.data);return row}
  async function push(){if(applying)return;const data=snapshot(),sig=JSON.stringify(data);if(sig===last)return;last=sig;pill('Syncing…','wait');const r=await fetch(`${URL}/rest/v1/shopping_state?household_id=eq.${encodeURIComponent(HOUSE)}`,{method:'PATCH',headers,body:JSON.stringify({data,updated_at:new Date().toISOString()})});if(!r.ok)throw new Error('write '+r.status);pill('Family Sync')}
- try{pill('Connecting…','wait');const remote=await getRemote();const local=snapshot();const remoteEmpty=!remote?.data||Object.keys(remote.data).length===0;if(remoteEmpty){await push()}else{const hasLocal=KEYS.some(k=>local[k]&&Object.keys(local[k]||{}).length);if(!hasLocal)apply(remote.data);else await push()}pill('Family Sync');
+ try{pill('Connecting…','wait');const remote=await getRemote(),local=snapshot();const remoteEmpty=!remote?.data||Object.keys(remote.data).length===0;if(remoteEmpty){await push()}else{const hasLocal=KEYS.some(k=>local[k]&&Object.keys(local[k]||{}).length);if(!hasLocal)apply(remote.data);else await push()}pill('Family Sync');
  const original=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){original.call(this,k,v);if(KEYS.includes(k)&&!applying){clearTimeout(timer);timer=setTimeout(()=>push().catch(()=>pill('Sync issue','err')),350)}};
- let remoteSig=JSON.stringify(remote?.data||{});setInterval(async()=>{try{const r=await getRemote(),sig=JSON.stringify(r?.data||{});if(sig!==remoteSig){remoteSig=sig;const localSig=JSON.stringify(snapshot());if(sig!==localSig)apply(r.data)}}catch{pill('Sync issue','err')}},2500);
- window.__familySync={push,getRemote,household:HOUSE};
+ let remoteSig=JSON.stringify(remote?.data||{});setInterval(async()=>{try{const r=await getRemote(),sig=JSON.stringify(r?.data||{});if(sig!==remoteSig){remoteSig=sig;if(sig!==JSON.stringify(snapshot()))apply(r.data)}}catch{pill('Sync issue','err')}},2500);window.__familySync={push,getRemote,household:HOUSE};
  }catch(e){console.error('Family sync:',e);pill('Sync issue','err')}
 },500)})();
