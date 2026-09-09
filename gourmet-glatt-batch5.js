@@ -8,7 +8,8 @@
   ['dated-menus','menu-date-storage.js?v=stable-1'],
   ['home-shopping','home-shopping-summary.js?v=stable-1'],
   ['recipes','recipes-tab.js?v=stable-1'],
-  ['family-sync','family-sync.js?v=preview-1']
+  ['family-sync','family-sync.js?v=preview-2']
  ];
- function load(i){if(i>=scripts.length){document.documentElement.dataset.shoppingAppReady='true';window.dispatchEvent(new CustomEvent('shopping-app-ready'));return}const[id,src]=scripts[i];if(document.querySelector(`script[data-app-module="${id}"]`)){load(i+1);return}const s=document.createElement('script');s.src=src;s.async=false;s.dataset.appModule=id;s.onload=()=>load(i+1);s.onerror=()=>{console.error('Shopping app module failed:',id,src);document.documentElement.dataset.shoppingAppError=id};document.head.appendChild(s)}load(0)
+ function calendarWrap(){if(document.getElementById('calendarWrapFix'))return;const st=document.createElement('style');st.id='calendarWrapFix';st.textContent='#cal .date .evt{white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important;line-height:1.05!important;text-align:center!important;max-width:100%!important}';document.head.appendChild(st)}
+ function load(i){if(i>=scripts.length){calendarWrap();document.documentElement.dataset.shoppingAppReady='true';window.dispatchEvent(new CustomEvent('shopping-app-ready'));return}const[id,src]=scripts[i];if(document.querySelector(`script[data-app-module="${id}"]`)){load(i+1);return}const s=document.createElement('script');s.src=src;s.async=false;s.dataset.appModule=id;s.onload=()=>load(i+1);s.onerror=()=>{console.error('Shopping app module failed:',id,src);document.documentElement.dataset.shoppingAppError=id};document.head.appendChild(s)}load(0)
 })();
