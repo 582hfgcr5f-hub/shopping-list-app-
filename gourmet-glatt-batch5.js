@@ -2,4 +2,5 @@ document.write('<script src="https://cdn.jsdelivr.net/gh/582hfgcr5f-hub/shopping
 document.write('<script src="store-tabs.js?v=20260907-2"><\/script>');
 document.write('<script src="costco-pictures.js?v=20260907-2"><\/script>');
 document.write('<script src="home-store-shortcuts.js?v=20260909-1"><\/script>');
-document.write('<script src="menu-date-storage.js?v=20260909-1"><\/script>');
+document.write('<script src="menu-date-storage.js?v=20260909-2"><\/script>');
+document.write('<script src="home-shopping-summary.js?v=20260909-1"><\/script>');
